@@ -164,71 +164,35 @@ void loop()
   esp_task_wdt_reset();
 }
 
-void networkTaskFunction(void *pvParameters)
-{
-  // Initialize SPIFFS
-  if (!SPIFFS.begin(true))
-  {
-    Serial.println("Failed to mount SPIFFS");
-    return;
-  }
+void networkTaskFunction(void *pvParameters) {
+  String ssid, password;
 
-  // Load WiFi credentials
-  bool wifiConfigured = false;
-  if (SPIFFS.exists("/wifi_config.json"))
-  {
-    File configFile = SPIFFS.open("/wifi_config.json", "r");
-    if (configFile)
-    {
-      JsonDocument doc;
-      DeserializationError error = deserializeJson(doc, configFile);
-      if (!error)
-      {
-        String ssid = doc["ssid"];
-        String password = doc["password"];
-        WiFi.begin(ssid.c_str(), password.c_str());
-        Serial.print("Connecting to WiFi");
-        for (int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++)
-        {
+  // Load WiFi credentials from NVS
+  loadWiFiCredentials(ssid, password);
+
+  if (!ssid.isEmpty() && !password.isEmpty()) {
+      WiFi.begin(ssid.c_str(), password.c_str());
+      Serial.print("Connecting to WiFi");
+      for (int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++) {
           delay(500);
           Serial.print(".");
-        }
-        if (WiFi.status() == WL_CONNECTED)
-        {
+      }
+      if (WiFi.status() == WL_CONNECTED) {
           Serial.println();
           Serial.print("Connected with IP: ");
           Serial.println(WiFi.localIP());
-          wifiConfigured = true;
-        }
-        else
-        {
+      } else {
           Serial.println("\nFailed to connect to WiFi");
-        }
       }
-      else
-      {
-        Serial.println("Failed to parse WiFi configuration");
-      }
-      configFile.close();
-    }
-  }
-  else
-  {
-    Serial.println("No WiFi configuration found");
+  } else {
+      Serial.println("No WiFi credentials found in NVS.");
   }
 
   // If WiFi is not configured, start in Access Point mode
-  if (!wifiConfigured)
-  {
-    WiFi.softAP("AdvancedTimer", "12345678");
-    Serial.print("Started Access Point with IP: ");
-    Serial.println(WiFi.softAPIP());
-  }
-
-  if (wifiConfigured && timeClient.update())
-  {
-    rtc.begin(DateTime(timeClient.getEpochTime()));
-    Serial.println(rtc.now().timestamp(DateTime::TIMESTAMP_FULL));
+  if (WiFi.status() != WL_CONNECTED) {
+      WiFi.softAP("AdvancedTimer", "12345678");
+      Serial.print("Started Access Point with IP: ");
+      Serial.println(WiFi.softAPIP());
   }
 
   // Begin Config Portal
@@ -237,9 +201,8 @@ void networkTaskFunction(void *pvParameters)
   esp_task_wdt_init(wdtTimeout, true);
   esp_task_wdt_add(NULL);
 
-  for (;;)
-  {
-    delay(1000);
-    esp_task_wdt_reset();
+  for (;;) {
+      delay(1000);
+      esp_task_wdt_reset();
   }
 }

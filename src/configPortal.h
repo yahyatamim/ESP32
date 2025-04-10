@@ -2,6 +2,7 @@
 #define CONFIG_PORTAL_H
 
 #include <ESPAsyncWebServer.h>
+#include <Preferences.h>
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
 
@@ -14,6 +15,9 @@
 #define MAX_CONDITIONS 50
 #define MAX_ACTIONS 50
 #define MAX_RULES 20
+
+void loadWiFiCredentials(String &ssid, String &password);
+void saveWiFiCredentials(const String &ssid, const String &password);
 
 class ConfigPortal
 {
