@@ -23,6 +23,10 @@
 
 // python -m esptool --chip esp32 erase_flash
 
+// Network task declaration
+TaskHandle_t networkTask;
+void networkTaskFunction(void *pvParameters);
+
 #define SSID "FactoryNext1"
 #define PASS "FactoryNext20$22#"
 // #define SSID "Desktop_tamim"
@@ -132,7 +136,18 @@ struct rule {
 uint8_t ruleSequence[MAX_RULES];
 
 void setup() {
+  // Create network task on core 0 with 32K stack size
+  xTaskCreatePinnedToCore(networkTaskFunction, "networkTask", 32768, NULL, 1,
+    &networkTask, 0);
+
   Serial.begin(115200);
+
+}
+
+void loop() {
+}
+
+void networkTaskFunction(void *pvParameters) {
   WiFi.begin(SSID, PASS);
   Serial.print("\nConnecting to WiFi");
   while (WiFi.status() != WL_CONNECTED){
@@ -147,7 +162,7 @@ void setup() {
     rtc.begin(DateTime(timeClient.getEpochTime()));
     Serial.println(rtc.now().timestamp(DateTime::TIMESTAMP_FULL));
   }
-}
-
-void loop() {
+  for(;;){
+    delay(1000);
+  }
 }
