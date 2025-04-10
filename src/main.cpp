@@ -174,6 +174,7 @@ void networkTaskFunction(void *pvParameters)
   }
 
   // Load WiFi credentials
+  bool wifiConfigured = false;
   if (SPIFFS.exists("/wifi_config.json"))
   {
     File configFile = SPIFFS.open("/wifi_config.json", "r");
@@ -187,14 +188,22 @@ void networkTaskFunction(void *pvParameters)
         String password = doc["password"];
         WiFi.begin(ssid.c_str(), password.c_str());
         Serial.print("Connecting to WiFi");
-        while (WiFi.status() != WL_CONNECTED)
+        for (int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++)
         {
           delay(500);
           Serial.print(".");
         }
-        Serial.println();
-        Serial.print("Connected with IP: ");
-        Serial.println(WiFi.localIP());
+        if (WiFi.status() == WL_CONNECTED)
+        {
+          Serial.println();
+          Serial.print("Connected with IP: ");
+          Serial.println(WiFi.localIP());
+          wifiConfigured = true;
+        }
+        else
+        {
+          Serial.println("\nFailed to connect to WiFi");
+        }
       }
       else
       {
@@ -207,7 +216,16 @@ void networkTaskFunction(void *pvParameters)
   {
     Serial.println("No WiFi configuration found");
   }
-  if (timeClient.update())
+
+  // If WiFi is not configured, start in Access Point mode
+  if (!wifiConfigured)
+  {
+    WiFi.softAP("AdvancedTimer", "12345678");
+    Serial.print("Started Access Point with IP: ");
+    Serial.println(WiFi.softAPIP());
+  }
+
+  if (wifiConfigured && timeClient.update())
   {
     rtc.begin(DateTime(timeClient.getEpochTime()));
     Serial.println(rtc.now().timestamp(DateTime::TIMESTAMP_FULL));

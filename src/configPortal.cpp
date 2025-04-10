@@ -108,8 +108,27 @@ void ConfigPortal::handleRoot(AsyncWebServerRequest *request)
 
 void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request)
 {
-    String jsonConfig = generateJsonConfig();
-    request->send(200, "application/json", jsonConfig);
+    DynamicJsonDocument doc(256);
+
+    // Load WiFi credentials from SPIFFS
+    if (SPIFFS.exists("/wifi_config.json"))
+    {
+        File configFile = SPIFFS.open("/wifi_config.json", "r");
+        if (configFile)
+        {
+            DeserializationError error = deserializeJson(doc, configFile);
+            if (error)
+            {
+                Serial.println("Failed to parse WiFi configuration");
+            }
+            configFile.close();
+        }
+    }
+
+    // Send the JSON response
+    String jsonResponse;
+    serializeJson(doc, jsonResponse);
+    request->send(200, "application/json", jsonResponse);
 }
 
 void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len)

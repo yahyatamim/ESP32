@@ -21,7 +21,10 @@
                 <input type="text" id="ssid" name="ssid" placeholder="Enter WiFi SSID" required>
 
                 <label for="password">WiFi Password:</label>
-                <input type="password" id="password" name="password" placeholder="Enter WiFi Password" required>
+                <div style="display: flex; align-items: center;">
+                    <input type="password" id="password" name="password" placeholder="Enter WiFi Password" required>
+                    <button type="button" id="toggle-password" style="margin-left: 8px;">Show</button>
+                </div>
 
                 <button type="submit">Save & Reboot</button>
             </form>

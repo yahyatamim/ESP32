@@ -1,6 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
   const configForm = document.getElementById("config-form");
+  const ssidInput = document.getElementById("ssid");
+  const passwordInput = document.getElementById("password");
   const statusOutput = document.getElementById("status-output");
+  const togglePasswordButton = document.getElementById("toggle-password");
+
+  // Fetch saved WiFi credentials
+  fetch("/config")
+    .then(response => response.json())
+    .then(data => {
+      ssidInput.value = data.ssid || ""; // Populate SSID
+      passwordInput.value = data.password || ""; // Populate password
+    })
+    .catch(err => {
+      console.error("Error fetching configuration:", err.message);
+    });
 
   // Fetch system status
   fetch("/status")
@@ -42,5 +56,16 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(err => {
         alert("Error: " + err.message);
       });
+  });
+
+  // Toggle password visibility
+  togglePasswordButton.addEventListener("click", () => {
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      togglePasswordButton.textContent = "Hide";
+    } else {
+      passwordInput.type = "password";
+      togglePasswordButton.textContent = "Show";
+    }
   });
 });
