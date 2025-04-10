@@ -106,40 +106,26 @@ void ConfigPortal::handleRoot(AsyncWebServerRequest *request)
     request->send(SPIFFS, "/index.html", "text/html");
 }
 
-void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request)
-{
-    DynamicJsonDocument doc(256);
+void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request) {
+    String ssid, password;
+    loadWiFiCredentials(ssid, password);
 
-    // Load WiFi credentials from SPIFFS
-    if (SPIFFS.exists("/wifi_config.json"))
-    {
-        File configFile = SPIFFS.open("/wifi_config.json", "r");
-        if (configFile)
-        {
-            DeserializationError error = deserializeJson(doc, configFile);
-            if (error)
-            {
-                Serial.println("Failed to parse WiFi configuration");
-            }
-            configFile.close();
-        }
-    }
+    JsonDocument doc;
+    doc["ssid"] = ssid;
+    doc["password"] = password;
 
-    // Send the JSON response
     String jsonResponse;
     serializeJson(doc, jsonResponse);
     request->send(200, "application/json", jsonResponse);
 }
 
-void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len)
-{
+void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len) {
     String jsonString = String((char *)data).substring(0, len);
 
     // Parse the JSON data
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, jsonString);
-    if (error)
-    {
+    if (error) {
         request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
         return;
     }
@@ -148,20 +134,12 @@ void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *dat
     String ssid = doc["ssid"];
     String password = doc["password"];
 
-    // Save the credentials to SPIFFS
-    File configFile = SPIFFS.open("/wifi_config.json", "w");
-    if (configFile)
-    {
-        configFile.print(jsonString);
-        configFile.close();
-        request->send(200, "application/json", "{\"status\":\"success\",\"message\":\"Configuration saved. Rebooting...\"}");
-        delay(1000);
-        ESP.restart(); // Reboot the ESP32
-    }
-    else
-    {
-        request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"Failed to save configuration\"}");
-    }
+    // Save the credentials to NVS
+    saveWiFiCredentials(ssid, password);
+
+    request->send(200, "application/json", "{\"status\":\"success\",\"message\":\"Configuration saved. Rebooting...\"}");
+    delay(1000);
+    ESP.restart(); // Reboot the ESP32
 }
 
 void ConfigPortal::handleGetStatus(AsyncWebServerRequest *request)
@@ -186,6 +164,26 @@ String ConfigPortal::getSystemStatus()
 {
     // Placeholder: Return a dummy system status
     return "{\"status\":\"ok\"}";
+}
+
+Preferences preferences;
+
+void saveWiFiCredentials(const String &ssid, const String &password)
+{
+    preferences.begin("wifi", false); // Open NVS namespace "wifi" in read-write mode
+    preferences.putString("ssid", ssid);
+    preferences.putString("password", password);
+    preferences.end(); // Close NVS
+    Serial.println("WiFi credentials saved to NVS.");
+}
+
+void loadWiFiCredentials(String &ssid, String &password)
+{
+    preferences.begin("wifi", true);                  // Open NVS namespace "wifi" in read-only mode
+    ssid = preferences.getString("ssid", "");         // Default to an empty string if not found
+    password = preferences.getString("password", ""); // Default to an empty string if not found
+    preferences.end();                                // Close NVS
+    Serial.println("WiFi credentials loaded from NVS.");
 }
 
 // Create a global instance
