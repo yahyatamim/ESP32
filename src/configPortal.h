@@ -15,7 +15,8 @@
 #define MAX_ACTIONS 50
 #define MAX_RULES 20
 
-class ConfigPortal {
+class ConfigPortal
+{
 private:
     AsyncWebServer server;
     bool portalActive;
@@ -24,7 +25,7 @@ private:
     void loadConfig();
     void saveConfig();
     String generateJsonConfig();
-    void parseJsonConfig(const String& jsonString);
+    void parseJsonConfig(const String &jsonString);
 
     // Web request handlers
     void handleRoot(AsyncWebServerRequest *request);
@@ -37,10 +38,10 @@ public:
     void begin();
     void stop();
     bool isActive() { return portalActive; }
-    
+
     // Configuration validation
     bool validateConfig();
-    
+
     // Status reporting
     String getSystemStatus();
 };

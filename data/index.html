@@ -1,39 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuration Portal</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Portal</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
+
 <body>
-  <header>
-    <h1>Configuration Portal</h1>
-  </header>
-  <main>
-    <section id="config-section">
-      <h2>Configuration Settings</h2>
-      <form id="config-form">
-        <label for="ssid">WiFi SSID:</label>
-        <input type="text" id="ssid" name="ssid" placeholder="Enter WiFi SSID" required>
-        
-        <label for="password">WiFi Password:</label>
-        <input type="password" id="password" name="password" placeholder="Enter WiFi Password" required>
-        
-        <button type="submit">Save & Reboot</button>
-      </form>
-    </section>
-    <section id="status-section">
-      <h2>System Status</h2>
-      <div id="status-output">
-        <p>Loading status...</p>
-      </div>
-    </section>
-  </main>
-  <footer>
-    <p>&copy; 2025 Advanced Timer</p>
-  </footer>
-  <script src="/script.js"></script>
+    <header>
+        <h1>Configuration Portal</h1>
+    </header>
+    <main>
+        <section id="config-section">
+            <h2>Configuration Settings</h2>
+            <form id="config-form">
+                <label for="ssid">WiFi SSID:</label>
+                <input type="text" id="ssid" name="ssid" placeholder="Enter WiFi SSID" required>
+
+                <label for="password">WiFi Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter WiFi Password" required>
+
+                <button type="submit">Save & Reboot</button>
+            </form>
+        </section>
+        <section id="status-section">
+            <h2>System Status</h2>
+            <div id="status-output">
+                <p>Loading status...</p>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Advanced Timer</p>
+    </footer>
+    <script src="/script.js"></script>
 </body>
+
 </html>

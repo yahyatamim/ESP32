@@ -36,32 +36,27 @@ Color Cue Notes:
    - Used for header text to enhance readability.
 */
 
-ConfigPortal::ConfigPortal() : server(80), portalActive(false) {
+ConfigPortal::ConfigPortal() : server(80), portalActive(false)
+{
     // Setup web server routes
-    server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        this->handleRoot(request);
-    });
-    
-    server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        this->handleGetConfig(request);
-    });
-    
-    server.on("/config", HTTP_POST, 
-        [](AsyncWebServerRequest *request) {}, 
-        NULL,
-        [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-            this->handleSaveConfig(request, data, len);
-        }
-    );
-    
-    server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        this->handleGetStatus(request);
-    });
+    server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request)
+              { this->handleRoot(request); });
+
+    server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request)
+              { this->handleGetConfig(request); });
+
+    server.on("/config", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+              { this->handleSaveConfig(request, data, len); });
+
+    server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request)
+              { this->handleGetStatus(request); });
 }
 
-void ConfigPortal::begin() {
+void ConfigPortal::begin()
+{
     // Initialize SPIFFS
-    if (!SPIFFS.begin(true)) {
+    if (!SPIFFS.begin(true))
+    {
         Serial.println("Error mounting SPIFFS");
         return;
     }
@@ -75,15 +70,19 @@ void ConfigPortal::begin() {
     Serial.println("Configuration portal started");
 }
 
-void ConfigPortal::stop() {
+void ConfigPortal::stop()
+{
     server.end();
     portalActive = false;
 }
 
-void ConfigPortal::loadConfig() {
-    if (SPIFFS.exists("/config.json")) {
+void ConfigPortal::loadConfig()
+{
+    if (SPIFFS.exists("/config.json"))
+    {
         File configFile = SPIFFS.open("/config.json", "r");
-        if (configFile) {
+        if (configFile)
+        {
             String jsonString = configFile.readString();
             configFile.close();
             parseJsonConfig(jsonString);
@@ -91,47 +90,81 @@ void ConfigPortal::loadConfig() {
     }
 }
 
-void ConfigPortal::saveConfig() {
+void ConfigPortal::saveConfig()
+{
     File configFile = SPIFFS.open("/config.json", "w");
-    if (configFile) {
+    if (configFile)
+    {
         String jsonString = generateJsonConfig();
         configFile.print(jsonString);
         configFile.close();
     }
 }
 
-void ConfigPortal::handleRoot(AsyncWebServerRequest *request) {
-    request->send(200, "text/html", "<h1>Welcome to the Configuration Portal</h1>");
+void ConfigPortal::handleRoot(AsyncWebServerRequest *request)
+{
+    request->send(SPIFFS, "/index.html", "text/html");
 }
 
-void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request) {
+void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request)
+{
     String jsonConfig = generateJsonConfig();
     request->send(200, "application/json", jsonConfig);
 }
 
-void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len) {
+void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len)
+{
     String jsonString = String((char *)data).substring(0, len);
-    parseJsonConfig(jsonString);
-    saveConfig();
-    request->send(200, "text/plain", "Configuration saved successfully");
+
+    // Parse the JSON data
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, jsonString);
+    if (error)
+    {
+        request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
+        return;
+    }
+
+    // Extract WiFi credentials
+    String ssid = doc["ssid"];
+    String password = doc["password"];
+
+    // Save the credentials to SPIFFS
+    File configFile = SPIFFS.open("/wifi_config.json", "w");
+    if (configFile)
+    {
+        configFile.print(jsonString);
+        configFile.close();
+        request->send(200, "application/json", "{\"status\":\"success\",\"message\":\"Configuration saved. Rebooting...\"}");
+        delay(1000);
+        ESP.restart(); // Reboot the ESP32
+    }
+    else
+    {
+        request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"Failed to save configuration\"}");
+    }
 }
 
-void ConfigPortal::handleGetStatus(AsyncWebServerRequest *request) {
+void ConfigPortal::handleGetStatus(AsyncWebServerRequest *request)
+{
     String status = getSystemStatus();
     request->send(200, "application/json", status);
 }
 
-String ConfigPortal::generateJsonConfig() {
+String ConfigPortal::generateJsonConfig()
+{
     // Placeholder: Return an empty JSON object
     return "{}";
 }
 
-void ConfigPortal::parseJsonConfig(const String &jsonString) {
+void ConfigPortal::parseJsonConfig(const String &jsonString)
+{
     // Placeholder: Parse the JSON string (not implemented yet)
     Serial.println("Parsing JSON config: " + jsonString);
 }
 
-String ConfigPortal::getSystemStatus() {
+String ConfigPortal::getSystemStatus()
+{
     // Placeholder: Return a dummy system status
     return "{\"status\":\"ok\"}";
 }
