@@ -54,15 +54,15 @@ ConfigPortal::ConfigPortal() : server(80), portalActive(false)
 
 void ConfigPortal::begin()
 {
-    // Initialize SPIFFS
-    if (!SPIFFS.begin(true))
+    // Initialize LittleFS
+    if (!LittleFS.begin(true))
     {
-        Serial.println("Error mounting SPIFFS");
+        Serial.println("Error mounting LittleFS");
         return;
     }
 
     // Serve static files
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
     // Start the server
     server.begin();
@@ -78,9 +78,9 @@ void ConfigPortal::stop()
 
 void ConfigPortal::loadConfig()
 {
-    if (SPIFFS.exists("/config.json"))
+    if (LittleFS.exists("/config.json"))
     {
-        File configFile = SPIFFS.open("/config.json", "r");
+        File configFile = LittleFS.open("/config.json", "r");
         if (configFile)
         {
             String jsonString = configFile.readString();
@@ -92,7 +92,7 @@ void ConfigPortal::loadConfig()
 
 void ConfigPortal::saveConfig()
 {
-    File configFile = SPIFFS.open("/config.json", "w");
+    File configFile = LittleFS.open("/config.json", "w");
     if (configFile)
     {
         String jsonString = generateJsonConfig();
@@ -103,10 +103,11 @@ void ConfigPortal::saveConfig()
 
 void ConfigPortal::handleRoot(AsyncWebServerRequest *request)
 {
-    request->send(SPIFFS, "/index.html", "text/html");
+    request->send(LittleFS, "/index.html", "text/html");
 }
 
-void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request) {
+void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request)
+{
     String ssid, password;
     loadWiFiCredentials(ssid, password);
 
@@ -119,13 +120,15 @@ void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request) {
     request->send(200, "application/json", jsonResponse);
 }
 
-void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len) {
+void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len)
+{
     String jsonString = String((char *)data).substring(0, len);
 
     // Parse the JSON data
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, jsonString);
-    if (error) {
+    if (error)
+    {
         request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
         return;
     }

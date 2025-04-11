@@ -3,7 +3,7 @@
 
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 #include <ArduinoJson.h>
 
 // Define maximum number of variables
