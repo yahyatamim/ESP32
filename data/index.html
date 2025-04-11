@@ -11,33 +11,59 @@
 </head>
 
 <body>
-    <header>
+    <header class="bg-primary text-white text-center py-3">
         <h1>Advanced Timer</h1>
     </header>
-    <main>
-        <section id="config-section">
-            <h2>Configuration Settings</h2>
-            <form id="config-form">
-                <label for="ssid">WiFi SSID:</label>
-                <input type="text" id="ssid" name="ssid" placeholder="Enter WiFi SSID" required>
-
-                <label for="password">WiFi Password:</label>
-                <div style="display: flex; align-items: center;">
-                    <input type="password" id="password" name="password" placeholder="Enter WiFi Password" required>
-                    <button type="button" id="toggle-password" style="margin-left: 8px;">Show</button>
-                </div>
-
-                <button type="submit">Save & Reboot</button>
-            </form>
-        </section>
-        <section id="status-section">
-            <h2>System Status</h2>
-            <div id="status-output">
-                <p>Loading status...</p>
+    <main class="container my-4">
+        <!-- Configuration Settings Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h2 class="h5 mb-0">Configuration Settings</h2>
             </div>
-        </section>
+            <div class="card-body">
+                <form id="config-form">
+                    <div class="mb-3">
+                        <label for="ssid" class="form-label">WiFi SSID:</label>
+                        <input type="text" id="ssid" name="ssid" class="form-control" placeholder="Enter WiFi SSID" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">WiFi Password:</label>
+                        <div class="input-group">
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter WiFi Password" required>
+                            <button type="button" id="toggle-password" class="btn btn-outline-secondary">Show</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save & Reboot</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- System Status Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h2 class="h5 mb-0">System Status</h2>
+            </div>
+            <div class="card-body">
+                <div id="status-output">
+                    <p>Loading status...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playground for IOVariables -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h2 class="h5 mb-0">IO Variables</h2>
+            </div>
+            <div class="card-body">
+                <div id="io-variables-list" class="mb-3">
+                    <!-- Dynamically populated list of IOVariables -->
+                </div>
+                <button id="add-io-variable" class="btn btn-success">Add IO Variable</button>
+            </div>
+        </div>
     </main>
-    <footer>
+    <footer class="text-center py-3 bg-light">
         <p>&copy; 2025 Advanced Timer</p>
     </footer>
     <script src="/bootstrap.min.js"></script> <!-- Add Bootstrap JS -->
