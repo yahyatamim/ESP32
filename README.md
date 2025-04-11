@@ -100,6 +100,61 @@ graph LR
 - **Responsive Design**: Columns stack vertically on small screens, with cards as collapsible sections.
 
 
+## Configuration Management: Unified JSON Approach
+
+This project utilizes a **Unified JSON Approach** for managing configuration data transfer between the web-based configuration portal (front-end) and the ESP32 microcontroller (backend).
+
+### Rationale
+
+While a RESTful approach with multiple endpoints for each data type (`IOVariable`, `condition`, `rule`, etc.) is possible, the Unified JSON approach was chosen for several key advantages in this embedded context:
+
+1.  **Atomic Updates & Consistency:** Configuration items often have interdependencies (rules rely on groups, which rely on conditions/actions). Sending the *entire* configuration in one transaction ensures that the device state remains consistent and avoids partial updates that could lead to undefined behavior.
+2.  **Simplified Development:**
+    *   **Front-end:** Requires only one API call to fetch the complete configuration and one call to save all changes. State management becomes simpler.
+    *   **Backend:** Requires only one primary API endpoint (e.g., `/api/config`) to handle both sending and receiving the configuration, reducing code complexity and request handling overhead on the ESP32.
+3.  **User Workflow Alignment:** Users typically load the configuration page, make multiple modifications across different sections (IOs, rules, etc.), and then save everything at once. This approach mirrors that workflow directly.
+4.  **Reduced Request Overhead:** Minimizes the number of simultaneous HTTP requests the ESP32 needs to handle, which is beneficial for resource-constrained devices.
+
+### Mechanism
+
+*   **Endpoint:** A single primary endpoint, typically `/api/config`, is used.
+*   **`GET /api/config`:**
+    *   The front-end sends a GET request to this endpoint upon loading the configuration page.
+    *   The ESP32 backend gathers all *active* configuration data (items where `status == true` from `IOVariable`, `condition`, `action`, `conditionGroup`, `actionGroup`, `rule` arrays) and the `ruleSequence`.
+    *   It serializes this data into a single, structured JSON object.
+    *   This JSON object is sent back to the front-end.
+    *   *Conceptual JSON Structure:*
+        ```json
+        {
+          "ioVariables": [ /* Array of active IOVariable objects */ ],
+          "conditions": [ /* Array of active condition objects */ ],
+          "actions": [ /* Array of active action objects */ ],
+          "conditionGroups": [ /* Array of active conditionGroup objects */ ],
+          "actionGroups": [ /* Array of active actionGroup objects */ ],
+          "rules": [ /* Array of active rule objects */ ],
+          "ruleSequence": [ /* Array of rule 'num's in execution order */ ]
+        }
+        ```
+*   **`POST /api/config` (or `PUT`)**
+    *   When the user saves changes, the front-end constructs a JSON object representing the *complete desired configuration* based on its current state.
+    *   This single JSON object is sent via a POST (or PUT) request to the `/api/config` endpoint.
+    *   The ESP32 backend receives the JSON, parses it, and performs validation.
+    *   If valid, the backend **replaces** its entire current configuration in RAM with the data received from the JSON.
+    *   The updated configuration is then saved atomically to persistent storage (e.g., SPIFFS, LittleFS).
+
+### Advanced Capabilities Enabled by this Approach
+
+*   **Configuration Import/Export:** The unified JSON object naturally represents the entire device logic state. This makes it straightforward to implement features allowing users to:
+    *   **Export:** Download the current configuration JSON as a backup file.
+    *   **Import:** Upload a previously exported JSON file to restore or apply a configuration.
+*   **Multiple Configuration Profiles:** The device could potentially store multiple configuration JSON files (e.g., `config_day.json`, `config_night.json`) in its filesystem. The backend could then provide an interface to load and activate a specific configuration profile based on user selection or other triggers.
+
+### Considerations
+
+*   **Payload Size:** For very complex configurations with many active items, the JSON payload size can become significant.
+*   **Memory Usage:** Parsing and serializing large JSON objects requires sufficient RAM on the ESP32. Efficient libraries (like ArduinoJson) and careful memory allocation (e.g., using a pre-sized `StaticJsonDocument`) are essential.
+
+
 ## Putting It All Together
 
 In essence, we’re doing this to empower a specific group—**non-programmers rooted in relay logic**—with a tool that feels familiar yet offers advanced capabilities. The "Advanced Timer" is for hobbyists, small-scale operators, and educators who want to automate without complexity, providing them a standalone, code-free solution that transforms their simple timer-based setups into something far more versatile. Our refinements (e.g., streamlined structs, `flag` for events, drop-down UI) ensure it’s both powerful and approachable, fulfilling the mission of making automation truly accessible.
