@@ -36,165 +36,158 @@ Color Cue Notes:
    - Used for header text to enhance readability.
 */
 
-ConfigPortal::ConfigPortal() : server(80), portalActive(false)
-{
-    // Setup web server routes
-    server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request)
-              { this->handleRoot(request); });
+ConfigPortal::ConfigPortal() : server(80), portalActive(false) {
+  // Setup web server routes
+  server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    this->handleRoot(request);
+  });
 
-    server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request)
-              { this->handleGetConfig(request); });
+  server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    this->handleGetConfig(request);
+  });
 
-    server.on("/config", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [this](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
-              { this->handleSaveConfig(request, data, len); });
+  server.on(
+      "/config", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+      [this](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+             size_t index,
+             size_t total) { this->handleSaveConfig(request, data, len); });
 
-    server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request)
-              { this->handleGetStatus(request); });
+  server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    this->handleGetStatus(request);
+  });
 }
 
-void ConfigPortal::begin()
-{
-    // Initialize LittleFS
-    if (!LittleFS.begin(true))
-    {
-        Serial.println("Error mounting LittleFS");
-        return;
+void ConfigPortal::begin() {
+  // Initialize LittleFS
+  if (!LittleFS.begin(true)) {
+    Serial.println("Error mounting LittleFS");
+    return;
+  } else {
+    Serial.println("LittleFS mounted successfully");
+  }
+
+  // Serve static files
+  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+
+  // Start the server
+  server.begin();
+  portalActive = true;
+  Serial.println("Configuration portal started");
+}
+
+void ConfigPortal::stop() {
+  server.end();
+  portalActive = false;
+}
+
+void ConfigPortal::loadConfig() {
+  if (LittleFS.exists("/config.json")) {
+    File configFile = LittleFS.open("/config.json", "r");
+    if (configFile) {
+      String jsonString = configFile.readString();
+      configFile.close();
+      parseJsonConfig(jsonString);
     }
-    else
-    {
-        Serial.println("LittleFS mounted successfully");
-    }
-
-    // Serve static files
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-
-    // Start the server
-    server.begin();
-    portalActive = true;
-    Serial.println("Configuration portal started");
+  }
 }
 
-void ConfigPortal::stop()
-{
-    server.end();
-    portalActive = false;
+void ConfigPortal::saveConfig() {
+  File configFile = LittleFS.open("/config.json", "w");
+  if (configFile) {
+    String jsonString = generateJsonConfig();
+    configFile.print(jsonString);
+    configFile.close();
+  }
 }
 
-void ConfigPortal::loadConfig()
-{
-    if (LittleFS.exists("/config.json"))
-    {
-        File configFile = LittleFS.open("/config.json", "r");
-        if (configFile)
-        {
-            String jsonString = configFile.readString();
-            configFile.close();
-            parseJsonConfig(jsonString);
-        }
-    }
+void ConfigPortal::handleRoot(AsyncWebServerRequest *request) {
+  request->send(LittleFS, "/index.html", "text/html");
 }
 
-void ConfigPortal::saveConfig()
-{
-    File configFile = LittleFS.open("/config.json", "w");
-    if (configFile)
-    {
-        String jsonString = generateJsonConfig();
-        configFile.print(jsonString);
-        configFile.close();
-    }
+void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request) {
+  String ssid, password;
+  loadWiFiCredentials(ssid, password);
+
+  JsonDocument doc;
+  doc["ssid"] = ssid;
+  doc["password"] = password;
+
+  String jsonResponse;
+  serializeJson(doc, jsonResponse);
+  request->send(200, "application/json", jsonResponse);
 }
 
-void ConfigPortal::handleRoot(AsyncWebServerRequest *request)
-{
-    request->send(LittleFS, "/index.html", "text/html");
+void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request,
+                                    uint8_t *data, size_t len) {
+  String jsonString = String((char *)data).substring(0, len);
+
+  // Parse the JSON data
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, jsonString);
+  if (error) {
+    request->send(400, "application/json",
+                  "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
+    return;
+  }
+
+  // Extract WiFi credentials
+  String ssid = doc["ssid"];
+  String password = doc["password"];
+
+  // Save the credentials to NVS
+  saveWiFiCredentials(ssid, password);
+
+  request->send(200, "application/json",
+                "{\"status\":\"success\",\"message\":\"Configuration saved. "
+                "Rebooting...\"}");
+  delay(1000);
+  ESP.restart();  // Reboot the ESP32
 }
 
-void ConfigPortal::handleGetConfig(AsyncWebServerRequest *request)
-{
-    String ssid, password;
-    loadWiFiCredentials(ssid, password);
-
-    JsonDocument doc;
-    doc["ssid"] = ssid;
-    doc["password"] = password;
-
-    String jsonResponse;
-    serializeJson(doc, jsonResponse);
-    request->send(200, "application/json", jsonResponse);
+void ConfigPortal::handleGetStatus(AsyncWebServerRequest *request) {
+  String status = getSystemStatus();
+  request->send(200, "application/json", status);
 }
 
-void ConfigPortal::handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len)
-{
-    String jsonString = String((char *)data).substring(0, len);
-
-    // Parse the JSON data
-    JsonDocument doc;
-    DeserializationError error = deserializeJson(doc, jsonString);
-    if (error)
-    {
-        request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
-        return;
-    }
-
-    // Extract WiFi credentials
-    String ssid = doc["ssid"];
-    String password = doc["password"];
-
-    // Save the credentials to NVS
-    saveWiFiCredentials(ssid, password);
-
-    request->send(200, "application/json", "{\"status\":\"success\",\"message\":\"Configuration saved. Rebooting...\"}");
-    delay(1000);
-    ESP.restart(); // Reboot the ESP32
+String ConfigPortal::generateJsonConfig() {
+  // Placeholder: Return an empty JSON object
+  return "{}";
 }
 
-void ConfigPortal::handleGetStatus(AsyncWebServerRequest *request)
-{
-    String status = getSystemStatus();
-    request->send(200, "application/json", status);
+void ConfigPortal::parseJsonConfig(const String &jsonString) {
+  // Placeholder: Parse the JSON string (not implemented yet)
+  Serial.println("Parsing JSON config: " + jsonString);
 }
 
-String ConfigPortal::generateJsonConfig()
-{
-    // Placeholder: Return an empty JSON object
-    return "{}";
-}
-
-void ConfigPortal::parseJsonConfig(const String &jsonString)
-{
-    // Placeholder: Parse the JSON string (not implemented yet)
-    Serial.println("Parsing JSON config: " + jsonString);
-}
-
-String ConfigPortal::getSystemStatus()
-{
-    // Placeholder: Return a dummy system status
-    return "{\"status\":\"ok\"}";
+String ConfigPortal::getSystemStatus() {
+  // Placeholder: Return a dummy system status
+  return "{\"status\":\"ok\"}";
 }
 
 Preferences preferences;
 
-void saveWiFiCredentials(const String &ssid, const String &password)
-{
-    preferences.begin("wifi", false); // Open NVS namespace "wifi" in read-write mode
-    preferences.putString("ssid", ssid);
-    preferences.putString("password", password);
-    preferences.end(); // Close NVS
-    Serial.println("WiFi credentials saved to NVS.");
+void saveWiFiCredentials(const String &ssid, const String &password) {
+  preferences.begin("wifi",
+                    false);  // Open NVS namespace "wifi" in read-write mode
+  preferences.putString("ssid", ssid);
+  preferences.putString("password", password);
+  preferences.end();  // Close NVS
+  Serial.println("WiFi credentials saved to NVS.");
 }
 
-void loadWiFiCredentials(String &ssid, String &password)
-{
-    preferences.begin("wifi", true);                  // Open NVS namespace "wifi" in read-only mode
-    ssid = preferences.getString("ssid", "");         // Default to an empty string if not found
-    password = preferences.getString("password", ""); // Default to an empty string if not found
-    preferences.end();                                // Close NVS
-    // Serial.println("WiFi credentials loaded from NVS.");
-    // Serial.print("SSID: ");
-    // Serial.println(ssid);
-    // Serial.print("Password: ");
-    // Serial.println(password);
+void loadWiFiCredentials(String &ssid, String &password) {
+  preferences.begin("wifi",
+                    true);  // Open NVS namespace "wifi" in read-only mode
+  ssid = preferences.getString("ssid",
+                               "");  // Default to an empty string if not found
+  password = preferences.getString(
+      "password", "");  // Default to an empty string if not found
+  preferences.end();    // Close NVS
+                        // Serial.println("WiFi credentials loaded from NVS.");
+                        // Serial.print("SSID: ");
+                        // Serial.println(ssid);
+                        // Serial.print("Password: ");
+                        // Serial.println(password);
 }
 
 // Create a global instance

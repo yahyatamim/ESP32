@@ -13,9 +13,18 @@
 </head>
 
 <body>
-    <header class="bg-primary text-white text-center py-3">
-        <h1>Advanced Timer</h1>
+    <!-- Header Card -->
+    <header class="mb-4"> <!-- Keep header tag for semantics, add margin-bottom -->
+        <div class="card text-white text-center"
+            style="background: linear-gradient(90deg, #8E24AA, #6A1B9A, #4A148C); text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">
+            <!-- Card inside header. Applied gradient and shadow directly -->
+            <div class="card-body py-3"> <!-- Use card-body for padding -->
+                <h1 class="mb-0">Advanced Timer</h1> <!-- Remove default h1 margin -->
+            </div>
+        </div>
     </header>
+    <!-- End Header Card -->
+
 
     <main class="container-fluid my-4"> <!-- Use container-fluid for wider layout -->
 
@@ -56,7 +65,6 @@
                     </div>
                     <div class="card-body">
                         <div id="status-output">
-                            <p>Loading status...</p>
                             <!-- Status will be loaded by script.js -->
                         </div>
                     </div>
@@ -69,15 +77,12 @@
 
             <!-- Column 1: IO Variables (One card per type) -->
             <div class="col-md-3">
-                <h4 class="text-center mb-3">1. IO Variables</h4>
-
                 <!-- Digital Inputs Card -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h5 class="h6 mb-0">Digital Inputs</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Configure physical digital inputs.</p>
                         <div id="digital-inputs-list" class="sortable-list list-group">
                             <!-- Placeholder for draggable DI items -->
                             <div class="list-group-item">DI 1 (GPIO 4)</div>
@@ -93,7 +98,6 @@
                         <h5 class="h6 mb-0">Digital Outputs</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Configure physical digital outputs.</p>
                         <div id="digital-outputs-list" class="sortable-list list-group">
                             <!-- Placeholder for draggable DO items -->
                             <div class="list-group-item">DO 1 (GPIO 27)</div>
@@ -108,7 +112,6 @@
                         <h5 class="h6 mb-0">Analog Inputs</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Configure physical analog inputs.</p>
                         <div id="analog-inputs-list" class="sortable-list list-group">
                             <!-- Placeholder for draggable AI items -->
                             <div class="list-group-item">AI 1 (GPIO 35)</div>
@@ -120,10 +123,9 @@
                 <!-- Soft IO Card -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="h6 mb-0">Software IO (Flags/Counters)</h5>
+                        <h5 class="h6 mb-0">Soft IO (Flags/Counters)</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Configure virtual variables.</p>
                         <div id="soft-io-list" class="sortable-list list-group">
                             <!-- Placeholder for draggable SIO items -->
                             <div class="list-group-item">SIO 1</div>
@@ -139,7 +141,6 @@
                         <h5 class="h6 mb-0">Timers</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Configure timers.</p>
                         <div id="timers-list" class="sortable-list list-group">
                             <!-- Placeholder for draggable Timer items -->
                             <div class="list-group-item">Timer 1</div>
@@ -151,16 +152,12 @@
 
             <!-- Column 2: Condition / Action Creation -->
             <div class="col-md-3">
-                <h4 class="text-center mb-3">2. Define Condition/Action</h4>
-
                 <!-- Condition Creation Card -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h5 class="h6 mb-0">Create Condition</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Drag an IO Variable here to define a condition (e.g., 'If Input 1 is
-                            True').</p>
                         <div id="condition-builder-area" class="sortable-list" style="min-height: 100px;">
                             <!-- Drop target area -->
                             Drop IO Variable Here
@@ -185,8 +182,6 @@
                         <h5 class="h6 mb-0">Create Action</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Drag an IO Variable here to define an action (e.g., 'Set Output 1
-                            True').</p>
                         <div id="action-builder-area" class="sortable-list" style="min-height: 100px;">
                             <!-- Drop target area -->
                             Drop IO Variable Here
@@ -208,16 +203,12 @@
 
             <!-- Column 3: Grouping -->
             <div class="col-md-3">
-                <h4 class="text-center mb-3">3. Group Conditions/Actions</h4>
-
                 <!-- Condition Groups Card -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h5 class="h6 mb-0">Condition Groups</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Drag saved Conditions here. Group multiple conditions with AND/OR
-                            logic.</p>
                         <button class="btn btn-sm btn-info mb-2">New Condition Group</button>
                         <div id="condition-groups-list">
                             <!-- Placeholder for created condition group sub-cards -->
@@ -244,7 +235,6 @@
                         <h5 class="h6 mb-0">Action Groups</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Drag saved Actions here. Group actions that run sequentially.</p>
                         <button class="btn btn-sm btn-info mb-2">New Action Group</button>
                         <div id="action-groups-list">
                             <!-- Placeholder for created action group sub-cards -->
@@ -264,16 +254,12 @@
 
             <!-- Column 4: Rules -->
             <div class="col-md-3">
-                <h4 class="text-center mb-3">4. Define Rules</h4>
-
                 <!-- Rules Card -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h5 class="h6 mb-0">Rules</h5>
                     </div>
                     <div class="card-body">
-                        <p class="small text-muted">Combine one Condition Group and one Action Group into a Rule. Drag
-                            to reorder execution priority.</p>
                         <button class="btn btn-sm btn-warning mb-2">New Rule</button>
                         <div id="rules-list" class="sortable-list list-group">
                             <!-- Placeholder for created rules -->
