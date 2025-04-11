@@ -60,6 +60,10 @@ void ConfigPortal::begin()
         Serial.println("Error mounting LittleFS");
         return;
     }
+    else
+    {
+        Serial.println("LittleFS mounted successfully");
+    }
 
     // Serve static files
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
@@ -186,7 +190,11 @@ void loadWiFiCredentials(String &ssid, String &password)
     ssid = preferences.getString("ssid", "");         // Default to an empty string if not found
     password = preferences.getString("password", ""); // Default to an empty string if not found
     preferences.end();                                // Close NVS
-    Serial.println("WiFi credentials loaded from NVS.");
+    // Serial.println("WiFi credentials loaded from NVS.");
+    // Serial.print("SSID: ");
+    // Serial.println(ssid);
+    // Serial.print("Password: ");
+    // Serial.println(password);
 }
 
 // Create a global instance
