@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Timer Config Portal</title>
-    <link rel="stylesheet" href="/bootstrap.min.css"> <!-- Add Bootstrap CSS -->
-    <link rel="stylesheet" href="/style.css"> <!-- Existing custom styles -->
+    <!-- Bootstrap CSS (Make sure this path is correct in your LittleFS) -->
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <!-- Custom Styles (Make sure this path is correct) -->
+    <link rel="stylesheet" href="/style.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 
@@ -14,61 +16,297 @@
     <header class="bg-primary text-white text-center py-3">
         <h1>Advanced Timer</h1>
     </header>
-    <main class="container my-4">
-        <!-- Configuration Settings Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h2 class="h5 mb-0">Configuration Settings</h2>
-            </div>
-            <div class="card-body">
-                <form id="config-form">
-                    <div class="mb-3">
-                        <label for="ssid" class="form-label">WiFi SSID:</label>
-                        <input type="text" id="ssid" name="ssid" class="form-control" placeholder="Enter WiFi SSID" required>
+
+    <main class="container-fluid my-4"> <!-- Use container-fluid for wider layout -->
+
+        <!-- Existing Row for Config and Status -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <!-- Configuration Settings Card -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h2 class="h5 mb-0">Configuration Settings</h2>
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">WiFi Password:</label>
-                        <div class="input-group">
-                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter WiFi Password" required>
-                            <button type="button" id="toggle-password" class="btn btn-outline-secondary">Show</button>
+                    <div class="card-body">
+                        <form id="config-form">
+                            <div class="mb-3">
+                                <label for="ssid" class="form-label">WiFi SSID:</label>
+                                <input type="text" id="ssid" name="ssid" class="form-control"
+                                    placeholder="Enter WiFi SSID" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">WiFi Password:</label>
+                                <div class="input-group">
+                                    <input type="password" id="password" name="password" class="form-control"
+                                        placeholder="Enter WiFi Password" required>
+                                    <button type="button" id="toggle-password"
+                                        class="btn btn-outline-secondary">Show</button>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save & Reboot</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <!-- System Status Card -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h2 class="h5 mb-0">System Status</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="status-output">
+                            <p>Loading status...</p>
+                            <!-- Status will be loaded by script.js -->
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Save & Reboot</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- System Status Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h2 class="h5 mb-0">System Status</h2>
-            </div>
-            <div class="card-body">
-                <div id="status-output">
-                    <p>Loading status...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Playground for IOVariables -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h2 class="h5 mb-0">IO Variables</h2>
-            </div>
-            <div class="card-body">
-                <div id="io-variables-list" class="mb-3">
-                    <!-- Dynamically populated list of IOVariables -->
+        <!-- NEW Four-Column Layout Row -->
+        <div class="row">
+
+            <!-- Column 1: IO Variables (One card per type) -->
+            <div class="col-md-3">
+                <h4 class="text-center mb-3">1. IO Variables</h4>
+
+                <!-- Digital Inputs Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Digital Inputs</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Configure physical digital inputs.</p>
+                        <div id="digital-inputs-list" class="sortable-list list-group">
+                            <!-- Placeholder for draggable DI items -->
+                            <div class="list-group-item">DI 1 (GPIO 4)</div>
+                            <div class="list-group-item">DI 2 (GPIO 2)</div>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-2">Add DI</button>
+                    </div>
                 </div>
-                <button id="add-io-variable" class="btn btn-success">Add IO Variable</button>
+
+                <!-- Digital Outputs Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Digital Outputs</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Configure physical digital outputs.</p>
+                        <div id="digital-outputs-list" class="sortable-list list-group">
+                            <!-- Placeholder for draggable DO items -->
+                            <div class="list-group-item">DO 1 (GPIO 27)</div>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-2">Add DO</button>
+                    </div>
+                </div>
+
+                <!-- Analog Inputs Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Analog Inputs</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Configure physical analog inputs.</p>
+                        <div id="analog-inputs-list" class="sortable-list list-group">
+                            <!-- Placeholder for draggable AI items -->
+                            <div class="list-group-item">AI 1 (GPIO 35)</div>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-2">Add AI</button>
+                    </div>
+                </div>
+
+                <!-- Soft IO Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Software IO (Flags/Counters)</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Configure virtual variables.</p>
+                        <div id="soft-io-list" class="sortable-list list-group">
+                            <!-- Placeholder for draggable SIO items -->
+                            <div class="list-group-item">SIO 1</div>
+                            <div class="list-group-item">SIO 2</div>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-2">Add SIO</button>
+                    </div>
+                </div>
+
+                <!-- Timers Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Timers</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Configure timers.</p>
+                        <div id="timers-list" class="sortable-list list-group">
+                            <!-- Placeholder for draggable Timer items -->
+                            <div class="list-group-item">Timer 1</div>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-2">Add Timer</button>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <!-- Column 2: Condition / Action Creation -->
+            <div class="col-md-3">
+                <h4 class="text-center mb-3">2. Define Condition/Action</h4>
+
+                <!-- Condition Creation Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Create Condition</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Drag an IO Variable here to define a condition (e.g., 'If Input 1 is
+                            True').</p>
+                        <div id="condition-builder-area" class="sortable-list" style="min-height: 100px;">
+                            <!-- Drop target area -->
+                            Drop IO Variable Here
+                        </div>
+                        <!-- Form elements for condition details would go here -->
+                        <input type="text" class="form-control form-control-sm mt-2" placeholder="Condition Name">
+                        <select class="form-select form-select-sm mt-2">
+                            <option selected>Select Comparison...</option>
+                            <option value="isTrue">is True</option>
+                            <option value="isFalse">is False</option>
+                            <option value="isEqual">is Equal To...</option>
+                            <!-- Add other comparisons -->
+                        </select>
+                        <input type="number" class="form-control form-control-sm mt-2" placeholder="Value (if needed)">
+                        <button class="btn btn-sm btn-primary mt-2">Save Condition</button>
+                    </div>
+                </div>
+
+                <!-- Action Creation Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Create Action</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Drag an IO Variable here to define an action (e.g., 'Set Output 1
+                            True').</p>
+                        <div id="action-builder-area" class="sortable-list" style="min-height: 100px;">
+                            <!-- Drop target area -->
+                            Drop IO Variable Here
+                        </div>
+                        <!-- Form elements for action details would go here -->
+                        <input type="text" class="form-control form-control-sm mt-2" placeholder="Action Name">
+                        <select class="form-select form-select-sm mt-2">
+                            <option selected>Select Action Type...</option>
+                            <option value="set">Set True</option>
+                            <option value="reset">Set False</option>
+                            <option value="setValue">Set Value...</option>
+                            <!-- Add other actions -->
+                        </select>
+                        <input type="number" class="form-control form-control-sm mt-2" placeholder="Value (if needed)">
+                        <button class="btn btn-sm btn-primary mt-2">Save Action</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Grouping -->
+            <div class="col-md-3">
+                <h4 class="text-center mb-3">3. Group Conditions/Actions</h4>
+
+                <!-- Condition Groups Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Condition Groups</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Drag saved Conditions here. Group multiple conditions with AND/OR
+                            logic.</p>
+                        <button class="btn btn-sm btn-info mb-2">New Condition Group</button>
+                        <div id="condition-groups-list">
+                            <!-- Placeholder for created condition group sub-cards -->
+                            <div class="sub-card">
+                                <h6>Group Name: Trigger Check</h6>
+                                <select class="form-select form-select-sm mb-2">
+                                    <option>AND Logic</option>
+                                    <option>OR Logic</option>
+                                </select>
+                                <div class="sortable-list list-group">
+                                    <div class="list-group-item">Condition: Input 1 is True</div>
+                                    <div class="list-group-item">Condition: Timer 1 Flag is True</div>
+                                </div>
+                                <button class="btn btn-sm btn-danger mt-2">Delete Group</button>
+                            </div>
+                            <!-- More groups would appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Groups Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Action Groups</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Drag saved Actions here. Group actions that run sequentially.</p>
+                        <button class="btn btn-sm btn-info mb-2">New Action Group</button>
+                        <div id="action-groups-list">
+                            <!-- Placeholder for created action group sub-cards -->
+                            <div class="sub-card">
+                                <h6>Group Name: Activate Pump</h6>
+                                <div class="sortable-list list-group">
+                                    <div class="list-group-item">Action: Set Output 1 True</div>
+                                    <div class="list-group-item">Action: Start Timer 2</div>
+                                </div>
+                                <button class="btn btn-sm btn-danger mt-2">Delete Group</button>
+                            </div>
+                            <!-- More groups would appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 4: Rules -->
+            <div class="col-md-3">
+                <h4 class="text-center mb-3">4. Define Rules</h4>
+
+                <!-- Rules Card -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="h6 mb-0">Rules</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">Combine one Condition Group and one Action Group into a Rule. Drag
+                            to reorder execution priority.</p>
+                        <button class="btn btn-sm btn-warning mb-2">New Rule</button>
+                        <div id="rules-list" class="sortable-list list-group">
+                            <!-- Placeholder for created rules -->
+                            <div class="list-group-item">
+                                <strong>Rule 1: Pump Control</strong><br>
+                                <small>IF: [Trigger Check] THEN: [Activate Pump]</small>
+                                <button class="btn btn-sm btn-danger float-end">X</button>
+                            </div>
+                            <div class="list-group-item">
+                                <strong>Rule 2: Safety Stop</strong><br>
+                                <small>IF: [Emergency Button Pressed] THEN: [Stop Everything]</small>
+                                <button class="btn btn-sm btn-danger float-end">X</button>
+                            </div>
+                            <!-- More rules would appear here, draggable via SortableJS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- End of Four-Column Row -->
+
     </main>
-    <footer class="text-center py-3 bg-light">
+
+    <footer class="text-center py-3 bg-light mt-4">
         <p>&copy; 2025 Advanced Timer</p>
     </footer>
-    <script src="/bootstrap.min.js"></script> <!-- Add Bootstrap JS -->
-    <script src="/Sortable.min.js"></script> <!-- Add Sortable JS -->
-    <script src="/script.js"></script> <!-- Existing custom script -->
+
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="/bootstrap.min.js"></script>
+    <!-- SortableJS Library -->
+    <script src="/Sortable.min.js"></script>
+    <!-- Your Custom Script -->
+    <script src="/script.js"></script>
 </body>
 
 </html>

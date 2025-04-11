@@ -71,7 +71,7 @@ void networkTaskFunction(void *pvParameters)
     Serial.print("Connecting to WiFi");
     for (int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++)
     {
-      delay(500);
+      delay(1000);
       Serial.print(".");
     }
     if (WiFi.status() == WL_CONNECTED)

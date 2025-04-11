@@ -68,4 +68,49 @@ document.addEventListener("DOMContentLoaded", () => {
       togglePasswordButton.textContent = "Show";
     }
   });
+
+
+
+  // Make items in IO Variable lists draggable
+  document.querySelectorAll('#digital-inputs-list, #digital-outputs-list, #analog-inputs-list, #soft-io-list, #timers-list').forEach(el => {
+    new Sortable(el, {
+      group: { name: 'io-vars', pull: 'clone', put: false }, // Clone on drag, don't allow dropping back
+      sort: false // Don't sort within the source list
+    });
+  });
+
+  // Make Condition/Action builder areas drop targets
+  new Sortable(document.getElementById('condition-builder-area'), {
+    group: 'io-vars', // Accept drops from 'io-vars' group
+    onAdd: function (evt) {
+      // Handle item dropped here (e.g., populate form fields)
+      console.log('IO Variable dropped into Conditions:', evt.item.textContent);
+      evt.item.remove(); // Remove the clone after drop (or modify it)
+    }
+  });
+  new Sortable(document.getElementById('action-builder-area'), {
+    group: 'io-vars', // Accept drops from 'io-vars' group
+    onAdd: function (evt) {
+      console.log('IO Variable dropped into Actions:', evt.item.textContent);
+      evt.item.remove();
+    }
+  });
+
+  // Example for making Condition/Action Group lists sortable/droppable
+  document.querySelectorAll('#condition-groups-list .sortable-list, #action-groups-list .sortable-list').forEach(el => {
+    new Sortable(el, {
+      group: 'conditions-or-actions', // Define groups for conditions/actions
+      animation: 150
+    });
+  });
+
+
+  // Make Rules list sortable
+  new Sortable(document.getElementById('rules-list'), {
+    group: 'rules',
+    animation: 150,
+    handle: '.list-group-item' // Allow dragging the whole item
+  });
+
+  // Add more Sortable initializations for dragging conditions/actions to groups, and groups to rules...
 });
