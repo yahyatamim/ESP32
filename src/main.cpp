@@ -15,13 +15,14 @@
   vendor lock-in.
 */
 
+#include <Arduino.h>
 #include <ESP32TimerInterrupt.h>  // Hardware Timer
 #include <RTClib.h>               // timekeeping for scheduling
-#include <TickTwo.h>
-#include <WiFi.h>          // Needed for WiFi
-#include <WiFiUdp.h>       // Needed for ntpClient
-#include <esp_task_wdt.h>  // Watchdog timer
-#include <ntpclient.h>     // Network Time
+#include <TickTwo.h>              // Software Timer
+#include <WiFi.h>                 // Needed for WiFi
+#include <WiFiUdp.h>              // Needed for ntpClient
+#include <esp_task_wdt.h>         // Watchdog timer
+#include <ntpclient.h>            // Network Time
 
 #include "configPortal.h"  // Will Host our configuration portal
 
