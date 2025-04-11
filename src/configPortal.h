@@ -1,19 +1,22 @@
 #ifndef CONFIG_PORTAL_H
 #define CONFIG_PORTAL_H
 
+#include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 
 // Define maximum number of variables
-#define MAX_DIGITAL_IN 8
-#define MAX_DIGITAL_OUT 8
+#define MAX_DIGITAL_IN 6
+#define MAX_DIGITAL_OUT 4
 #define MAX_ANALOG_IN 4
 #define MAX_SOFTIO 20
 #define MAX_TIMERS 16
 #define MAX_CONDITIONS 50
+#define MAX_CONDITION_GROUPS 20
 #define MAX_ACTIONS 50
+#define MAX_ACTION_GROUPS 20
 #define MAX_RULES 20
 
 void loadWiFiCredentials(String &ssid, String &password);
