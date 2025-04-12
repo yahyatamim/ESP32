@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const togglePasswordButton = document.getElementById("toggle-password");
 
   // Fetch saved WiFi credentials
-  fetch("/config")
+  fetch("/wifi/config")
     .then(response => response.json())
     .then(data => {
       ssidInput.value = data.ssid || ""; // Populate SSID
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       password: formData.get("password")
     });
 
-    fetch("/config", {
+    fetch("/wifi/config", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

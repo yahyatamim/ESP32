@@ -297,7 +297,13 @@ bool initializeConfiguration() {
     // TODO: Add logic here to LOAD the configuration from the existing file
     // into the global arrays (ioVariables, conditions, actions, etc.).
     // loadConfigurationFromFile(); // Example function call
-    return true;
+    if (loadConfigurationFromFile()) {
+      Serial.println("Configuration loaded from file.");
+      return true;
+    } else {
+      Serial.println("ERROR: Failed to load configuration from file.");
+      return false;
+    }
   } else {
     Serial.printf(
         "Configuration file %s not found. Creating default "
